@@ -35,20 +35,6 @@ const config = {
         },
 
 
-/*If you want to change website color go to /css/global.css and in :root {} is a color pallete (don't change names of variables, change only values)*/
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
