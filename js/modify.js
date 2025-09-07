@@ -8,7 +8,7 @@ const config = {
     serverInfo: {
         serverLogoImageFileName: "logo.png", /*This is a file name for logo in /images/ (If you upload new logo with other name, you must change this value)*/
         serverName: "Createminecraft", /*Server name*/
-        serverIp: "play.createminecraft.dpdns.org", /*Server IP (if you want to add online user counter, you must have true the enable-status and enable-query of server.properties)*/
+        serverIp: "smp.createminecraft.dpdns.org", /*Server IP (if you want to add online user counter, you must have true the enable-status and enable-query of server.properties)*/
         discordServerID: "1294820990718705705" /*Your server ID (if you want to add online user counter, you must have enabled Discord server widget)*/
     },
 
