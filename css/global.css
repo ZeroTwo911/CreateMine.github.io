@@ -263,3 +263,25 @@ section:not(#header) .content {
     text-align: center;
   }
 }
+
+.stat-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.stat {
+  padding: 12px;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.icon-link {
+  text-decoration: none; /* removes the underline */
+}
