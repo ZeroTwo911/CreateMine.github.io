@@ -55,6 +55,7 @@
                     <button class="copy-ip">Copy IP</button>
                     <a href="##" target="_blank" rel="noopener noreferrer">
                     <button class="how-to-join">Instant</button>
+                    </a>
                 </div>
                 <p class="ip-copied">IP was successfully copied!</p>
             </div>
@@ -89,7 +90,7 @@
     <!--Discord-->
     <section id="discord">
         <div class="content">
-            <h2 class="section-title">Join our <span>PVE Oficial ASA ARK Server</span> if you need some dinos! <br> Join our <span>Dummystore!</span></h2>
+            <h2 class="section-title">Join our <span>PVE Oficial ASA ARK Server</span> if you need some dinos! <br> Join our <span>Rapipis-Store!</span></h2>
                 <a href="https://discord.gg/KZeXa26EPX" 
                 class="discord-link" 
                 target="_blank" 
@@ -102,6 +103,7 @@
     <!--Footer-->
     <footer id="footer">
         <p class="copyright">&copy; 2025 <span class="server-name-footer">createminecraft</span>. All rights reserved.</p>
+    </footer>
 </body>
 <script src="js/modify.js"></script>
 <script src="https://kit.fontawesome.com/cbf5ee59c8.js" crossorigin="anonymous"></script>
@@ -121,7 +123,7 @@
                 statusDiv.innerHTML = `
                     <strong style="color:#00ff00;">✅ Server is ONLINE</strong><br>
                     Players: ${data.players.online} / ${data.players.max}<br>
-                    Version: ${data.version}<br><br>
+                    Version: ${data.version}
                 `;
                 document.querySelector(".minecraft-online-players").textContent = data.players.online;
             } else {
