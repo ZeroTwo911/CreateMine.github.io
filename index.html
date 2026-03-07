@@ -32,7 +32,7 @@
 
         <div class="links">
             <a href="#" class="link active">Create</a>
-            <a href="vanilla.html" class="link">Bedrock</a>
+            <a href="vanilla.html" class="link">Create++</a>
             <a href="modify.html" class="link">Modify</a>
         </div>
     </div>
@@ -88,6 +88,22 @@
         </div>
     </section>
 
+    <!--Player Dashboard-->
+    <section id="player-dashboard">
+        <div class="content">
+            <div class="dashboard-header">
+                <h2 class="section-title">Player Display Dashboard</h2>
+                <p class="dashboard-subtitle">
+                    Live players online: <span class="dashboard-online-count">0</span>
+                </p>
+            </div>
+
+            <div class="dashboard-grid" id="player-dashboard-grid">
+                <p class="dashboard-empty">Checking players...</p>
+            </div>
+        </div>
+    </section>
+
     <!--Discord-->
     <section id="discord">
         <div class="content">
@@ -112,6 +128,97 @@
 <script>
     const serverIP = "mc.createminecraft.dpdns.org"; // your server IP
     const statusDiv = document.getElementById('mc-status');
+    const dashboardGrid = document.getElementById('player-dashboard-grid');
+    const dashboardOnlineCount = document.querySelector('.dashboard-online-count');
+
+    function normalizePlayerNames(playersData = {}) {
+        const names = [];
+
+        const pushName = (value) => {
+            if (!value) return;
+            if (typeof value === 'string') names.push(value);
+            else if (typeof value === 'object' && typeof value.name === 'string') names.push(value.name);
+        };
+
+        if (Array.isArray(playersData.list)) {
+            playersData.list.forEach(pushName);
+        } else if (typeof playersData.list === 'string') {
+            playersData.list.split(',').map(name => name.trim()).filter(Boolean).forEach(pushName);
+        } else if (playersData.list && typeof playersData.list === 'object') {
+            Object.values(playersData.list).forEach(pushName);
+        }
+
+        if (Array.isArray(playersData.sample)) {
+            playersData.sample.forEach(pushName);
+        }
+
+        return names.map(name => name.trim()).filter(Boolean);
+    }
+
+    async function getPlayerNamesFromFallbackApis(serverAddress) {
+        try {
+            const response = await fetch(`https://api.mcstatus.io/v2/status/java/${encodeURIComponent(serverAddress)}`);
+            const data = await response.json();
+
+            const fallbackNames = [];
+            const playersList = data?.players?.list;
+
+            if (Array.isArray(playersList)) {
+                playersList.forEach((player) => {
+                    if (typeof player === 'string') {
+                        fallbackNames.push(player);
+                        return;
+                    }
+
+                    if (player && typeof player === 'object') {
+                        if (typeof player.name_clean === 'string') fallbackNames.push(player.name_clean);
+                        else if (typeof player.name_raw === 'string') fallbackNames.push(player.name_raw);
+                        else if (typeof player.name === 'string') fallbackNames.push(player.name);
+                    }
+                });
+            }
+
+            return fallbackNames.map(name => name.trim()).filter(Boolean);
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function renderPlayerDashboard(players = [], onlineCount = 0, isOnline = false) {
+        if (!dashboardGrid || !dashboardOnlineCount) return;
+
+        const safeOnlineCount = Number.isFinite(Number(onlineCount)) ? Number(onlineCount) : 0;
+        const visiblePlayers = players.filter((name) => {
+            const normalized = String(name || '').trim().toLowerCase();
+            return normalized && normalized !== 'anonymous player' && !normalized.startsWith('unknown player');
+        });
+
+        dashboardOnlineCount.textContent = isOnline ? String(safeOnlineCount) : "0";
+        dashboardGrid.innerHTML = "";
+
+        if (!isOnline) {
+            dashboardGrid.innerHTML = `<p class="dashboard-empty">Server is offline. Player list is unavailable.</p>`;
+            return;
+        }
+
+        if (!visiblePlayers.length) {
+            dashboardGrid.innerHTML = `<p class="dashboard-empty">${safeOnlineCount} player(s) online, but real names are not publicly available right now.</p>`;
+            return;
+        }
+
+        visiblePlayers.forEach((name) => {
+            const card = document.createElement('article');
+            card.className = 'player-card';
+            card.innerHTML = `
+                <img src="https://minotar.net/helm/${encodeURIComponent(name)}/64" alt="${name} avatar" class="player-avatar" loading="lazy">
+                <div class="player-meta">
+                    <h3 class="player-name">${name}</h3>
+                    <p class="player-status">Online</p>
+                </div>
+            `;
+            dashboardGrid.appendChild(card);
+        });
+    }
 
     async function checkServer() {
         try {
@@ -120,21 +227,32 @@
             const data = await response.json();
 
             if (data.online) {
+                let onlinePlayers = normalizePlayerNames(data.players ?? {});
+                const onlinePlayersCount = Number(data.players?.online ?? 0);
+
+                if (!onlinePlayers.length && onlinePlayersCount > 0) {
+                    const fallbackPlayers = await getPlayerNamesFromFallbackApis(serverIP);
+                    onlinePlayers = [...onlinePlayers, ...fallbackPlayers];
+                }
+
                 statusDiv.innerHTML = `
                     <strong style="color:#00ff00;">✅ Server is ONLINE</strong><br>
                     Players: ${data.players.online} / ${data.players.max}<br>
                     Version: ${data.version}<br><br>
                 `;
                 document.querySelector(".minecraft-online-players").textContent = data.players.online;
+                renderPlayerDashboard(onlinePlayers, onlinePlayersCount, true);
             } else {
                 statusDiv.innerHTML = `
                     <strong style="color:#ff0000;">❌ Server is OFFLINE</strong><br>
                     Try again later.
                 `;
                 document.querySelector(".minecraft-online-players").textContent = "0";
+                renderPlayerDashboard([], 0, false);
             }
         } catch (error) {
             statusDiv.innerHTML = `<span style="color:#ff0000;">⚠ Error fetching server status</span>`;
+            renderPlayerDashboard([], 0, false);
             console.error(error);
         }
     }
